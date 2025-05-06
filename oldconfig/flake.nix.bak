@@ -1,0 +1,32 @@
+{
+  description = "A simple NixOS flake";
+
+  inputs = {
+    # NixOS official package source, here using the nixos-23.11 branch
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
+    home-manager = {
+      url = "github:nix-community/home-manager/release-24.05";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+
+  outputs = { nixpkgs-unstable, nixpkgs, nixos-hardware, home-manager, ... }@inputs:
+
+ {
+    # The host with the hostname `my-nixos` will use this configuration
+    nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
+      modules = [
+        ./nixos/configuration.nix
+        nixos-hardware.nixosModules.dell-xps-13-9343
+        home-manager.nixosModules.home-manager
+        {
+	  home-manager.backupFileExtension = "bak";
+          home-manager.users.lucky = import ./home.nix;
+        }
+      ];
+    };
+  };
+}
